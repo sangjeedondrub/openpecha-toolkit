@@ -127,8 +127,8 @@ class FormattedDMP(diff_match_patch):
                     # Run a diff to get a framework of equivalent indices.
                     diffs = self.diff_main(text1, text2, False)
                     if (len(text1) > self.Match_MaxBits and
-                            self.diff_levenshtein(diffs) / float(len(text1)) >
-                            self.Patch_DeleteThreshold):
+                        self.diff_levenshtein(diffs) / float(len(text1)) >
+                        self.Patch_DeleteThreshold):
                         # The end points match, but the content is unacceptably bad.
                         results[-1] = False
                     else:

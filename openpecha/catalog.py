@@ -1,10 +1,9 @@
-'''catalog module contains all the functionalities necessary for managin
+"""catalog module contains all the functionalities necessary for managin
 the catalog. Functonalities includes:
     - Creating opfs from input text
     - Assiging ID to the new opf
     - Updating the catalog with new opfs
-
-'''
+"""
 
 import yaml
 import requests
@@ -13,7 +12,6 @@ from openpecha.formatters import *
 from openpecha.github_utils import create_file, create_readme
 from openpecha.github_utils import github_publish
 from openpecha.utils import *
-
 
 buildin_pipes = {
     'input': {
@@ -26,7 +24,7 @@ buildin_pipes = {
 
 
 class CatalogManager:
-    '''Manages the catalog'''
+    """Manages the catalog"""
 
     def __init__(self, pipes=None, formatter_type=None, not_include_files=['releases'], last_id_fn='last_id'):
         self.repo_name = "openpecha-catalog"
@@ -38,29 +36,29 @@ class CatalogManager:
         self.not_include_files = not_include_files
         self.pipes = pipes if pipes else buildin_pipes
 
-
+    @staticmethod
     def _get_formatter_class(self, formatter_type):
-        '''Returns formatter class based on the formatter-type'''
+        """Returns formatter class based on the formatter-type"""
         if formatter_type == 'ocr':
             return GoogleOCRFormatter
         elif formatter_type == 'tsadra':
             return TsadraFormatter
 
-    def _get_last_id(self):
-        '''returns the id assigin to last opf pecha'''
+    @staticmethod
+    def _get_last_id():
+        """returns the id assigin to last opf pecha"""
         last_id_url = 'https://raw.githubusercontent.com/OpenPecha/openpecha-catalog/master/data/last_id'
         r = requests.get(last_id_url)
         return int(r.content.decode('utf-8').strip()[1:])
 
-    
-    def _add_id_url(self, row):
-        id = row[0]
-        row[0] = f'[{id}](https://github.com/OpenPecha/{id})'
+    @staticmethod
+    def _add_id_url(row):
+        idx = row[0]
+        row[0] = f'[{idx}](https://github.com/OpenPecha/{idx})'
         return row
 
-
     def update_catalog(self):
-        '''Updates the catalog csv to have new opf-pechas metadata'''
+        """Updates the catalog csv to have new opf-pechas metadata"""
         # update last_id
         content = self.batch[-1][0].strip()
         create_file(self.repo_name, self.last_id_path, content, "update last id of Pecha", update=True)
@@ -76,9 +74,8 @@ class CatalogManager:
         # reset the batch
         self.batch = []
 
-
     def _get_catalog_metadata(self, pecha_path):
-        meta_fn = pecha_path/f'{pecha_path.name}.opf/meta.yml'
+        meta_fn = pecha_path / f'{pecha_path.name}.opf/meta.yml'
         metadata = yaml.safe_load(meta_fn.open())
         catalog_metadata = [
             metadata['id'].split(':')[-1],
@@ -90,9 +87,8 @@ class CatalogManager:
         self.batch.append(catalog_metadata)
         create_readme(metadata['source_metadata'], pecha_path)
 
-
     def format_and_publish(self, path):
-        '''Convert input pecha to opf-pecha with id assigined'''
+        """Convert input pecha to opf-pecha with id assigined"""
         formatter = self.FormatterClass()
         self.last_id += 1
         pecha_path = formatter.create_opf(path, self.last_id)
@@ -100,14 +96,12 @@ class CatalogManager:
         github_publish(pecha_path, not_includes=self.not_include_files)
         return pecha_path
 
-
     def ocr_to_opf(self, path):
         self._process(
             path,
             'ocr_result_input',
             'create_release_with_assets'
         )
-
 
     def _process(self, path, input_method, release_method):
         print('[INFO] Getting input')

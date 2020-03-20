@@ -3,7 +3,6 @@ import struct
 from pathlib import Path
 import platform
 
-
 M_TYPE = platform.system()
 GIT_URL = {
     'Darwin-64': 'https://sourceforge.net/projects/git-osx-installer/files/git-2.23.0-intel-universal-mavericks.dmg',
@@ -19,8 +18,8 @@ def run_cmd(cmd):
 
 def install_dependencies():
     dependencies = [
-	'requests',
-	'tqdm',
+        'requests',
+        'tqdm',
     ]
     for dependency in dependencies:
         run_cmd(f'pip3 install {dependency}')
@@ -30,7 +29,7 @@ def git_pkg_fn():
     mount_path = Path('/Volumes')
     git_pkg_dir = list(mount_path.glob('Git*'))[0]
     git_pkg_path = str(list(git_pkg_dir.glob('git*'))[0])
-    return git_pkg_path.replace(' ', '\ ')    
+    return git_pkg_path.replace(' ', '\ ')
 
 
 def is_git_installed():
@@ -42,22 +41,22 @@ def download_git(url):
     import requests
     from tqdm import tqdm
 
-    git_installer_fn = Path.home()/'Downloads'/url.split('/')[-1]
+    git_installer_fn = Path.home() / 'Downloads' / url.split('/')[-1]
     if git_installer_fn.is_file():
         print('[INFO] Git installer already downloaded')
         return git_installer_fn
 
     r = requests.get(url, stream=True)
     total_size = int(r.headers.get('content-length', 0))
-    block_size = 1024 #1 kibibyte
+    block_size = 1024  # 1 kibibyte
     t = tqdm(total=total_size, unit='iB', unit_scale=True)
- 
+
     with git_installer_fn.open('wb') as f:
-    	for data in r.iter_content(block_size):
+        for data in r.iter_content(block_size):
             t.update(len(data))
             f.write(data)
     t.close()
-    
+
     return git_installer_fn
 
 
@@ -67,8 +66,8 @@ def install_git():
         git_installer_fn = download_git(GIT_URL[f'{M_TYPE}-32'])
     else:
         git_installer_fn = download_git(GIT_URL[f'{M_TYPE}-64'])
-        
-    if M_TYPE == 'Darwin': 
+
+    if M_TYPE == 'Darwin':
         # mount and install git
         run_cmd(f'hdiutil attach {git_installer_fn}')
         run_cmd(f'sudo installer -pkg {git_pkg_fn()} -target /')
@@ -79,11 +78,12 @@ def install_git():
 
 
 def sys_32_or_64():
-    return struct.calcsize("P")*8
+    return struct.calcsize("P") * 8
 
 
 def install_op_toolkit():
     run_cmd('pip3 install openpecha')
+
 
 def install():
     print('[INFO] Installing dependencies ...')
@@ -93,7 +93,7 @@ def install():
     if is_git_installed():
         print('[INFO] Git already installed')
     else:
-    	install_git()
+        install_git()
 
     print('[INFO] Installing OpenPecha ToolKit ....')
     install_op_toolkit()

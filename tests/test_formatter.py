@@ -22,7 +22,6 @@ class TestHFMLFormatter:
 
         assert result == expected
 
-
     def test_build_layers(self):
         m_text1 = Path('tests/data/formatter/hfml/kangyur_01.txt').read_text()
         m_text2 = Path('tests/data/formatter/hfml/kangyur_02.txt').read_text()
@@ -37,20 +36,23 @@ class TestHFMLFormatter:
             result = formatter.build_layers(text, len(texts))
 
         result = formatter.get_result()
-        
+
         expected_result = {
-            'poti_title':[[(0,24)],[(0,24)],[(0,24)]],
-            'chapter_title':[[(98,125)],[],[]],
-            'citation':[[],[(164,202),(204,241)],[(97,162)]],
-            'page': [[(0, 24, 'kk', '1a'), (27, 676, 'kl', '1b'), (679, 2173, 'lm', '2a')], [(0, 0, 'kk', '1a'),(0,266,'','1b')], [(0, 266, 'ko', '1a')]],
-            'topic': [[(27, 2046, 1,'T1')],[(2046,2173,1,'t2')],[(26, 266, 2,'T2')], [(26, 243, 3,'T3')],[(243,266,3,'t4')]],
-            'sub_topic': [[[(27, 1352, 1,'T1-1')], [(1352, 1496, 1,'T1-2')], [(1496, 2046, 1,'T1-6')]],[[]], [[(26, 140, 2,'T1-8')],[(140,266,2,'T1-9')]],[[]],[[]]],
-            'sabche': [[(1548,1936)],[],[]],
-            'tsawa': [[(420,739)],[],[]],
-            'yigchung': [[],[],[(164,241)]],
+            'poti_title': [[(0, 24)], [(0, 24)], [(0, 24)]],
+            'chapter_title': [[(98, 125)], [], []],
+            'citation': [[], [(164, 202), (204, 241)], [(97, 162)]],
+            'page': [[(0, 24, 'kk', '1a'), (27, 676, 'kl', '1b'), (679, 2173, 'lm', '2a')],
+                     [(0, 0, 'kk', '1a'), (0, 266, '', '1b')], [(0, 266, 'ko', '1a')]],
+            'topic': [[(27, 2046, 1, 'T1')], [(2046, 2173, 1, 't2')], [(26, 266, 2, 'T2')], [(26, 243, 3, 'T3')],
+                      [(243, 266, 3, 't4')]],
+            'sub_topic': [[[(27, 1352, 1, 'T1-1')], [(1352, 1496, 1, 'T1-2')], [(1496, 2046, 1, 'T1-6')]], [[]],
+                          [[(26, 140, 2, 'T1-8')], [(140, 266, 2, 'T1-9')]], [[]], [[]]],
+            'sabche': [[(1548, 1936)], [], []],
+            'tsawa': [[(420, 739)], [], []],
+            'yigchung': [[], [], [(164, 241)]],
             'correction': [[(1838, 1843, 'མཆིའོ་')], [], []],
             'error_candidate': [[(2040, 2042), (2044, 2045)], [], []],
-            'peydurma':[[1518, 1624, 1938], [], []]
+            'peydurma': [[1518, 1624, 1938], [], []]
         }
 
         for layer in result:
@@ -66,7 +68,6 @@ class TestGoogleOCRFormatter:
         formatter = GoogleOCRFormatter()
         return formatter, data_path, responses
 
-    
     def test_get_base_text(self, get_resources):
         formatter, data_path, responses = get_resources
         formatter.build_layers(responses, '')
@@ -77,7 +78,6 @@ class TestGoogleOCRFormatter:
         # expected = (data_path/'v001.txt').read_text()
         # assert result == expected
 
-    
     def test_build_layers(self, get_resources):
         formatter, data_path, responses = get_resources
 
@@ -90,6 +90,7 @@ class TestGoogleOCRFormatter:
         for result_page, expected_page in zip(result['pages'], expected['pages']):
             assert result_page[:2] == expected_page
 
+
 class TestTsadraFormatter:
 
     def test_tsadra_formatter(self):
@@ -101,21 +102,20 @@ class TestTsadraFormatter:
             text = formatter.text_preprocess(m_text)
             formatter.build_layers(text)
         result = formatter.get_result()
-       
+
         expected_result = {
-            'book_title':[(0,84)],
-            'author':[(86,109),(111,134),(136,181)],
-            'chapter_title':[(183,200)],
-            'tsawa':[(4150,4300),(5122,5298)],
-            'quotation':[(3993,4131),(4302,4417)],
-            'sabche':[(5091,5120),(7313,7375)],
-            'yigchung':[(7273,7311)]
+            'book_title': [(0, 84)],
+            'author': [(86, 109), (111, 134), (136, 181)],
+            'chapter_title': [(183, 200)],
+            'tsawa': [(4150, 4300), (5122, 5298)],
+            'quotation': [(3993, 4131), (4302, 4417)],
+            'sabche': [(5091, 5120), (7313, 7375)],
+            'yigchung': [(7273, 7311)]
         }
 
         for layer in result:
             print(result[layer])
             assert result[layer] == expected_result[layer]
-
 
     def test_tsadra_get_base_text(self):
         m_text1 = Path('tests/data/formatter/tsadra/htmls/cover.xhtml').read_text()

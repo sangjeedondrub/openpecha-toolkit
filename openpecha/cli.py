@@ -12,25 +12,27 @@ from openpecha.serializers import *
 from openpecha.blupdate import Blupdate
 from openpecha.formatters import *
 
-
 OP_PATH = Path('./.openpecha')
+
 config = {
     # Github
     'OP_CATALOG_URL': 'https://raw.githubusercontent.com/OpenPoti/openpecha-catalog/master/data/catalog.csv',
     'OP_ORG': 'https://github.com/OpenPecha',
 
     # Local
-    'OP_DATA_PATH': (OP_PATH/'data').resolve(),
-    'OP_CATALOG_PATH': (OP_PATH/'data'/'catalog.csv').resolve(),
-    'CONFIG_PATH': (OP_PATH/'config').resolve(),
-    'DATA_CONFIG_PATH': (OP_PATH/'config'/'data_config').resolve(),
+    'OP_DATA_PATH': (OP_PATH / 'data').resolve(),
+    'OP_CATALOG_PATH': (OP_PATH / 'data' / 'catalog.csv').resolve(),
+    'CONFIG_PATH': (OP_PATH / 'config').resolve(),
+    'DATA_CONFIG_PATH': (OP_PATH / 'config' / 'data_config').resolve(),
 }
 
 ERROR = '[ERROR] {}'
 INFO = '[INFO] {}'
 
+
 def get_pecha_id(n):
     return f'P{int(n):06}'
+
 
 @click.group()
 def cli():
@@ -43,7 +45,6 @@ def create_config_dirs():
 
 
 def get_pecha(id, batch_path, layers):
-
     def _check_pecha(id=None, pechas=None, layer=None, pecha_list=None):
         if id not in pecha_list:
             if id in pechas:
@@ -63,7 +64,6 @@ def get_pecha(id, batch_path, layers):
         with Path(batch_path).open() as f:
             batch_ids = [line.strip() for line in f.readlines()]
         return batch_ids
-
 
     pecha_list = []
 
@@ -98,8 +98,8 @@ def get_pecha(id, batch_path, layers):
 def download_pecha(pecha, out):
     # clone the repo
     pecha_url = f"{config['OP_ORG']}/{pecha}.git"
-    pecha_path = config['OP_DATA_PATH']/pecha
-    if pecha_path.is_dir(): # if repo is already exits at local then try to pull
+    pecha_path = config['OP_DATA_PATH'] / pecha
+    if pecha_path.is_dir():  # if repo is already exits at local then try to pull
         repo = Repo(str(pecha_path))
         repo.heads['master'].checkout()
         repo.remotes.origin.pull()
@@ -115,12 +115,12 @@ def download_pecha(pecha, out):
 @click.option('--filter', '-f', help='filter pecha by layer availability, specify \
                                      layer names in comma separated, eg: title,yigchung,..')
 @click.option('--out', '-o', default='./pecha',
-                            help='directory to store all the pecha')
+              help='directory to store all the pecha')
 def download(**kwargs):
-    '''
+    """
     Command to download pecha.
     If id and batch options are not provided then it will download all the pecha.
-    '''
+    """
     pecha_id = get_pecha_id(kwargs['number'])
 
     # create config dirs
@@ -150,9 +150,10 @@ def download(**kwargs):
 # Apply layer command
 layers_name = ['title', 'tsawa', 'yigchung', 'quotes', 'sapche']
 
+
 @cli.command()
 @click.option('--name', '-n', type=click.Choice(layers_name), \
-                              help='name of a layer to be applied')
+              help='name of a layer to be applied')
 @click.option('--list', '-l', help='list of name of layers to applied, \
                           name of layers should be comma separated')
 @click.argument('work_number')
@@ -165,7 +166,7 @@ def layer(**kwargs):
         - OUT is the filename to the write the result. Currently support only Markdown file.
     """
     work_id = get_pecha_id(kwargs['work_number'])
-    opfpath = config["OP_DATA_PATH"]/work_id/f'{work_id}.opf'
+    opfpath = config["OP_DATA_PATH"] / work_id / f'{work_id}.opf'
     serializer = SerializeMd(opfpath)
     if kwargs['name']:
         serializer.apply_layer(kwargs['name'])
@@ -187,6 +188,7 @@ def layer(**kwargs):
 def pecha_list():
     return [pecha.name for pecha in config['OP_DATA_PATH'].iterdir()]
 
+
 def get_data_path():
     return Path(config['DATA_CONFIG_PATH'].read_text().strip())
 
@@ -195,30 +197,30 @@ def check_edits(w_id):
     edit_path = get_data_path()
     data_path = config['OP_DATA_PATH']
 
-    srcbl = (data_path/f'{w_id}'/f'{w_id}.opf'/'base.txt').read_text()
-    dstbl = (edit_path/f'{w_id}.txt').read_text()
+    srcbl = (data_path / f'{w_id}' / f'{w_id}.opf' / 'base.txt').read_text()
+    dstbl = (edit_path / f'{w_id}.txt').read_text()
 
     return srcbl != dstbl, srcbl, dstbl
 
 
 def setup_credential(repo):
     # setup authentication, if not done
-    if not (config['CONFIG_PATH']/'credential').is_file():
+    if not (config['CONFIG_PATH'] / 'credential').is_file():
         username = click.prompt('Github Username')
         password = click.prompt('Github Password', hide_input=True)
         # save credential
-        (config['CONFIG_PATH']/'credential').write_text(f'{username},{password}')
+        (config['CONFIG_PATH'] / 'credential').write_text(f'{username},{password}')
 
     if not '@' in repo.remotes.origin.url:
         # get user credentials
-        credential = (config['CONFIG_PATH']/'credential').read_text()
+        credential = (config['CONFIG_PATH'] / 'credential').read_text()
         username, password = [s.strip() for s in credential.split(',')]
-        
+
         old_url = repo.remotes.origin.url.split('//')
         repo.remotes.origin.set_url(
             f'{old_url[0]}//{username}:{password}@{old_url[1]}'
         )
-    
+
     return repo
 
 
@@ -237,7 +239,7 @@ def github_push(repo, branch_name, msg='made edits'):
     if repo.is_dirty():
         repo.git.add(A=True)
         repo.git.commit(m=msg)
-        try: 
+        try:
             repo.git.push('--set-upstream', 'origin', current)
         except Exception as e:
             print(e)
@@ -247,7 +249,7 @@ def github_push(repo, branch_name, msg='made edits'):
 
     # finally checkout to master for apply layer on validated text
     repo.heads['master'].checkout()
-    
+
     return True
 
 
@@ -260,7 +262,7 @@ def repo_reset(repo, branch_name):
     url = repo.remotes.origin.url.split('@')
     protocol = url[0].split('//')[0]
     repo.remotes.origin.set_url(
-            f'{protocol}//{url[1]}'
+        f'{protocol}//{url[1]}'
     )
 
 
@@ -274,7 +276,7 @@ def update(**kwargs):
     work_id = get_pecha_id(kwargs['work_number'])
     if work_id:
         if work_id in pecha_list():
-            repo_path = config["OP_DATA_PATH"]/work_id
+            repo_path = config["OP_DATA_PATH"] / work_id
             repo = Repo(str(repo_path))
 
             # if edited branch exists, then to check for changes in edited branch
@@ -289,13 +291,13 @@ def update(**kwargs):
                 click.echo(INFO.format(msg))
 
                 # Update layer annotations
-                updater =  Blupdate(srcbl, dstbl)
-                opfpath = repo_path/f'{work_id}.opf'
+                updater = Blupdate(srcbl, dstbl)
+                opfpath = repo_path / f'{work_id}.opf'
                 updater.update_annotations(opfpath)
 
                 # Update base-text
-                src = get_data_path()/f'{work_id}.txt'
-                dst = opfpath/'base.txt'
+                src = get_data_path() / f'{work_id}.txt'
+                dst = opfpath / 'base.txt'
                 shutil.copy(str(src), str(dst))
 
                 # Create edited branch and push to Github
@@ -318,16 +320,17 @@ def update(**kwargs):
 # OpenPecha Formatter
 formatter_types = ['ocr', 'hfml(default)', 'tsadra']
 
+
 @cli.command()
 @click.option('--name', '-n', type=click.Choice(formatter_types),
-                              help='Type of formatter')
+              help='Type of formatter')
 @click.option('--id', '-i', type=int,
-                            help='Id of the pecha')
+              help='Id of the pecha')
 @click.argument('input_path')
 def format(**kwargs):
-    '''
+    """
     Command to format pecha into opf
-    '''
+    """
     formatter = HFMLFormatter()
     if kwargs['name'] == 'ocr':
         formatter = GoogleOCRFormatter()
@@ -340,15 +343,15 @@ def format(**kwargs):
 @cli.command()
 @click.argument('pecha_num')
 def edit(**kwargs):
-    '''
+    """
     Command to export Pecha for editing work
-    '''
+    """
     pecha_id = get_pecha_id(kwargs['pecha_num'])
     opf_path = f'{config["OP_DATA_PATH"]}/{pecha_id}/{pecha_id}.opf'
 
     serializer = SerializeHFML(opf_path)
     serializer.apply_layers()
-    
+
     out_fn = f'{pecha_id}.txt'
     result = serializer.get_result()
     click.echo(result, file=open(out_fn, 'w'))

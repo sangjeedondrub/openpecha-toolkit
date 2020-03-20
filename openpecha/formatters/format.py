@@ -1,6 +1,6 @@
-'''
+"""
 This module contains format variable for all the annotations
-'''
+"""
 
 from collections import namedtuple
 
@@ -12,16 +12,16 @@ __all__ = [
 
 # General layer format
 Layer = {
-    'id': None,              # Uique id for annotation of specific Pecha or Abstract work. type: str
-    'annotation_type': None, # Name of annotation, type: str
-    'revision': None,             # Revision number. type: int
-    'annotations': []            # Annotations are stored in list . type: list
+    'id': None,                 # Uique id for annotation of specific Pecha or Abstract work. type: str
+    'annotation_type': None,    # Name of annotation, type: str
+    'revision': None,           # Revision number. type: int
+    'annotations': []           # Annotations are stored in list . type: list
 }
 
 # Span of the annotation
 Span = {
     'start': None,     # String index of starting character of the the annotation. type: int
-    'end': None,       # String index of the ending character of the annotation. type: int 
+    'end': None,       # String index of the ending character of the annotation. type: int
 }
 
 # Page annotation

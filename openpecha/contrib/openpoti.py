@@ -108,11 +108,11 @@ class Patches:
                 # process diffs
                 string = ''.join([c[1] for c in cm])
                 op = string[1]
-                string = string.replace('{', '')\
-                               .replace('}', '')\
-                               .replace('~', '')\
-                               .replace('+', '')\
-                               .replace('-', '')
+                string = string.replace('{', '') \
+                    .replace('}', '') \
+                    .replace('~', '') \
+                    .replace('+', '') \
+                    .replace('-', '')
 
                 if op == '+':
                     cm = [(1, string)]
@@ -243,12 +243,13 @@ class OpenPoti:
         # lyr_dir = Path(self.dirs['layers'] / basename.stem)
         # lyr_dir.mkdir(exist_ok=True)
 
-        #self.load_poti(basename.stem)
+        # self.load_poti(basename.stem)
         for name, lyr in md_lyrs:
             self.create_layer(base, lyr, name, clean_patch=False)
 
-        #layers info
-        ((self.dirs['layers'].parent)/'layers.yml').write_text('layers:\n  - book_sub_title:\n  - book_title:\n  - chapter_title:\n  - quotes:\n  - sapche:\n  - tsawa:')
+        # layers info
+        ((self.dirs['layers'].parent) / 'layers.yml').write_text(
+            'layers:\n  - book_sub_title:\n  - book_title:\n  - chapter_title:\n  - quotes:\n  - sapche:\n  - tsawa:')
 
     def create_layer(self, orig, mod, name, deps='', clean_patch=True):
         """
@@ -296,8 +297,8 @@ class OpenPoti:
             else:
                 raise ValueError('this should not happen')
             if note:
-                diffs.insert(-1, (1, f'[^{num+1}]'))
-                footnotes += f'\n[^{num+1}]: ' + note
+                diffs.insert(-1, (1, f'[^{num + 1}]'))
+                footnotes += f'\n[^{num + 1}]: ' + note
 
         return footnotes, patches
 
@@ -316,7 +317,7 @@ class OpenPoti:
             mstk = {}
             for num, r in enumerate(res):
                 if not r:
-                    mstk[str(num+1)] = self.dmp.format_patch(lyr[num])
+                    mstk[str(num + 1)] = self.dmp.format_patch(lyr[num])
             if mstk:
                 fails[lyr_name] = mstk
 
@@ -349,7 +350,7 @@ if __name__ == '__main__':
     }
 
     existing = OpenPoti(conf)
-    existing.new_poti('test_base+md.txt') 
+    existing.new_poti('test_base+md.txt')
 
     existing.create_layer(existing.current['base'],
                           Path(existing.dirs['input'] / 'text_base+md_correction.txt').read_text(encoding='utf-8-sig'),
